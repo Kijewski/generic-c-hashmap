@@ -16,7 +16,7 @@ static uint32_t stringHash(const stringHashMapEntry *entry) {
 		result ^= o << 5;
 		result ^= o >> (32-5);
 		result += *string * hash[index++];
-		if(index > (sizeof(hash) / sizeof(hash[0]))) {
+		if(index >= (sizeof(hash) / sizeof(hash[0]))) {
 			index = 0;
 		}
 	}
