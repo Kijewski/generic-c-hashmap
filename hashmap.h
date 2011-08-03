@@ -36,8 +36,8 @@ typedef enum {
 
 // http://oeis.org/A014234
 // Buckets should mostly contain one element (if the hash function is good), so
-// I put in 1, too.
-#define _HASHMAP_PRIMES 1, 2, 3, 7, 13, 31, 61, 127, 251, 509, 1021, 2039,     \
+// I put in 1 instead of 2.
+#define _HASHMAP_PRIMES 1, 3, 7, 13, 31, 61, 127, 251, 509, 1021, 2039,        \
                         4093, 8191, 16381, 32749, 65521, 131071, 262139,       \
                         524287, 1048573, 2097143, 4194301, 8388593, 16777213,  \
                         33554393, 67108859, 134217689, 268435399, 536870909,   \
