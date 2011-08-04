@@ -7,11 +7,11 @@
 
 #include "stringHashMap.h"
 
-static uint32_t stringHash(const char *entry) {
+static uint32_t stringHash(char **entry) {
 	static uint32_t hash[] = { _HASHMAP_PRIMES };
 	uint32_t result = -1u;
 	size_t index = 0;
-	for(const char *string = entry; *string; ++string) {
+	for(const char *string = *entry; *string; ++string) {
 		uint32_t o = result;
 		result ^= o << 5;
 		result ^= o >> (32-5);
@@ -23,4 +23,6 @@ static uint32_t stringHash(const char *entry) {
 	return result;
 }
 
-DECLARE_HASHMAP(stringHashMap, strcmp, stringHash, free, realloc)
+#define STRING_CMP(left, right) strcmp(*left, *right)
+
+DECLARE_HASHMAP(stringHashMap, STRING_CMP, stringHash, free, realloc)
