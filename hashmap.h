@@ -105,7 +105,7 @@ bool NAME##Remove(NAME *map,                                                   \
                   _HashType##NAME *entry);
 
 /**
- * To iterate over all entries in order they are safe in the map.
+ * To iterate over all entries in order they are saved in the map.
  * You must not insert or delete elements in this loop.
  * You can use continue and break as in usual for-loops.
  * 
