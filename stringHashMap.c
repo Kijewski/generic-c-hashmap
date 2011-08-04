@@ -5,13 +5,13 @@
 
 #include <stdlib.h>
 
-#include "StringHashMap.h"
+#include "stringHashMap.h"
 
-static uint32_t stringHash(const stringHashMapEntry *entry) {
+static uint32_t stringHash(const char *entry) {
 	static uint32_t hash[] = { _HASHMAP_PRIMES };
 	uint32_t result = -1u;
 	size_t index = 0;
-	for(char *string = entry->value; *string; ++string) {
+	for(const char *string = entry; *string; ++string) {
 		uint32_t o = result;
 		result ^= o << 5;
 		result ^= o >> (32-5);
@@ -23,8 +23,4 @@ static uint32_t stringHash(const stringHashMapEntry *entry) {
 	return result;
 }
 
-static uint32_t stringCmp(const stringHashMapEntry *left, const stringHashMapEntry *right) {
-	return strcmp(left->value, right->value);
-}
-
-DECLARE_HASHMAP(stringHashMap, stringCmp, stringHash, free, realloc)
+DECLARE_HASHMAP(stringHashMap, strcmp, stringHash, free, realloc)

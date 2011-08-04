@@ -11,27 +11,26 @@
 #include <string.h>
 
 typedef enum {
-    HMDR_FIND,     // returns old entry in parameter entry
-    HMDR_REPLACE,  // puts new entry, replaces current entry if exists,
-                   // *entry will be NULL
-    HMDR_SWAP,     // puts new entry, swappes old entry with **entry otherwise
-    HMDR_STACK,    // put an duplicate input the map (later you have to call
-                   // find-delete multiple times)
+    HMDR_FIND,    // returns old entry in parameter entry
+    HMDR_REPLACE, // puts new entry, replaces current entry if exists
+    HMDR_SWAP,    // puts new entry, swappes old entry with **entry otherwise
+    HMDR_STACK,   // put an duplicate input the map (later you have to call
+                  // find-delete multiple times)
 } HashMapDuplicateResolution;
 
 typedef enum {
-    HMPR_FAILED = 0, // map could not grow
-    HMPR_FOUND,      // item already existed and was stored in *entry
-    HMPR_REPLACED,   // item already existed and was replace, *extry set NULL
-    HMPR_SWAPPED,    // item already existed and was swapped with **entry
-    HMPR_STACKED,    // new item was stacked in map, old value stored in *entry
-    HMPR_PUT,        // new item was added to map
+    HMPR_FAILED,   // map could not grow
+    HMPR_FOUND,    // item already existed and was stored in *entry
+    HMPR_REPLACED, // item already existed and was replace, *extry set NULL
+    HMPR_SWAPPED,  // item already existed and was swapped with **entry
+    HMPR_STACKED,  // new item was stacked in map, old value stored in *entry
+    HMPR_PUT,      // new item was added to map
 } HashMapPutResult;
 
 typedef enum {
-    _HMNPR_NOT_NEEDED = -1,
-    _HMNPR_FAIL       =  0,
-    _HMNPR_GREW       = +1,
+    _HMNPR_NOT_NEEDED,
+    _HMNPR_FAIL,
+    _HMNPR_GREW,
 } _HashMapNextPrimeResult;
 
 // http://oeis.org/A014234
@@ -51,24 +50,17 @@ struct {                                                                       \
 }
 
 /**
- * Defines the datatypes and functions of this HashMap.
+ * Defines hashmap helper functions for type NAME.
  * \param NAME Typedef'd name of the HashMap type.
  * \param TYPE Type of the values to store.
  */
-#define DEFINE_HASHMAP(NAME, TYPE, HASH_RESOLUTION)                            \
+#define DEFINE_HASHMAP(NAME, TYPE)                                             \
                                                                                \
 extern const size_t _##NAME##Primes[];                                         \
                                                                                \
-typedef TYPE            _HashType##NAME;                                       \
-typedef HASH_RESOLUTION _HashResolution##NAME;                                 \
-                                                                               \
-typedef struct {                                                               \
-    _HashResolution##NAME hash;                                                \
-    _HashType##NAME       value;                                               \
-} NAME##Entry;                                                                 \
-                                                                               \
-typedef _HashStructure(NAME##Entry)  NAME##Bucket;                             \
-typedef _HashStructure(NAME##Bucket) NAME;                                     \
+typedef TYPE _HashType##NAME;                                                  \
+typedef _HashStructure(_HashType##NAME) NAME##Bucket;                          \
+typedef _HashStructure(NAME##Bucket)    NAME;                                  \
                                                                                \
 /* Initializes an empty hashmap.                                             */\
 /* An null'ed map is initalized too, but has an empty capacity (which grows  */\
@@ -90,44 +82,41 @@ void NAME##Destroy(NAME *map);                                                 \
 bool NAME##EnsureSize(NAME *map,                                               \
                       size_t capacity);                                        \
                                                                                \
-/* Calculates and sets the hash of an entry                                  */\
-/* \param entry Entry the hash should be calculated for.                     */\
-/* \return Calculated hash                                                   */\
-_HashResolution##NAME NAME##Hash(NAME##Entry *entry);                          \
-                                                                               \
 /* Looks up an entry in a map.                                               */\
 /* \param map Map to search in.                                              */\
 /* \param entry Entry to search                                              */\
 /* \return Found entry or NULL                                               */\
-NAME##Entry *NAME##Find(const NAME *map,                                       \
-                        NAME##Entry *entry);                                   \
+_HashType##NAME NAME##Find(const NAME *map,                                    \
+                           _HashType##NAME entry);                             \
                                                                                \
 /* Adds an entry into a map.                                                 */\
 /* \param map Map to add to.                                                 */\
 /* \param entry Entry add. If duplicate, return it in here.                  */\
 /* \return false, if map could not grow                                      */\
 HashMapPutResult NAME##Put(NAME *map,                                          \
-                           NAME##Entry **entry,                                \
+                           _HashType##NAME *entry,                             \
                            HashMapDuplicateResolution dr);                     \
                                                                                \
 /* Removes an entry for the list.                                            */\
 /* \param map Map to remove from.                                            */\
-/* \param entry Entry to remove.                                             */\
-void NAME##Remove(NAME *map,                                                   \
-                  NAME##Entry *entry);                                         \
+/* \param entry [In/out] Entry to remove, returns removed entry.             */\
+/* \return false, if did not exist                                           */\
+bool NAME##Remove(NAME *map,                                                   \
+                  _HashType##NAME *entry);
 
 /**
  * To iterate over all entries in order they are safe in the map.
  * You must not insert or delete elements in this loop.
  * You can use continue and break as in usual for-loops.
  * 
- * Like for ordinary loops you HAVE TO put braces:
+ * You HAVE TO put braces:
  *     HASHMAP_FOR_EACH(iter, map) {
+ *         do_something();
  *     } HASHMAP_FOR_EACH_END
  *  It's meant as a feature ...
  * 
  * \param NAME Defined name of map
- * \param ITER NAME##Entry* denoting the current element.
+ * \param ITER _HashType##NAME* denoting the current element.
  * \param MAP Map to iterate over.
  */
 #define HASHMAP_FOR_EACH(NAME, ITER, MAP)                                      \
@@ -170,7 +159,7 @@ void NAME##Remove(NAME *map,                                                   \
                 continue;                                                      \
             }                                                                  \
             const size_t __size = map.entries[__i].size;                       \
-            NAME##Entry *__entries[__size];                                    \
+            _HashType##NAME __entries[__size];                                 \
             memcpy(__entries, &map.entries[__i].entries, sizeof(__entries));   \
             for(size_t __h = 0; !__broke && __h < __size; ++__h) {             \
                 ITER = &map.entries[__i].entries[__h];                         \
@@ -185,12 +174,13 @@ void NAME##Remove(NAME *map,                                                   \
 /**
  * Declares the hash map functions.
  * \param NAME Typedef'd name of the HashMap type.
- * \param CMP Value comparator function.
- * \param HASH Value hash function.
+ * \param CMP Value comparator function. Could be easily a macro.
+ * \param GET_HASH inttype (*getHash)(const _HashType##NAME entry). Could be
+ *                 easily a macro.
  * \param FREE free() to use
  * \param REALLOC realloc() to use
  */
-#define DECLARE_HASHMAP(NAME, CMP, HASH, FREE, REALLOC)                        \
+#define DECLARE_HASHMAP(NAME, CMP, GET_HASH, FREE, REALLOC)                    \
                                                                                \
 const size_t _##NAME##Primes[] = { _HASHMAP_PRIMES, 0 };                       \
                                                                                \
@@ -223,10 +213,10 @@ void NAME##Destroy(NAME *map) {                                                \
 /* \param entries Boolean flag, if nth_prime_ is meaningful.                 */\
 /* \param entries nth_prime_ [In/out] current capacity, see _HASHMAP_PRIMES  */\
 /* \param newSize_ [Out] p (see description)                                 */\
-_HashMapNextPrimeResult _##NAME##NextPrime(size_t capacity,                    \
-                                           const void *entries,                \
-                                           uint8_t *nth_prime_,                \
-                                           size_t *newSize_) {                 \
+static _HashMapNextPrimeResult _##NAME##NextPrime(size_t capacity,             \
+                                                  const void *entries,         \
+                                                  uint8_t *nth_prime_,         \
+                                                  size_t *newSize_) {          \
     size_t oldSize = _##NAME##Primes[*nth_prime_];                             \
     if(!capacity || (entries && oldSize >= capacity)) {                        \
         return _HMNPR_NOT_NEEDED;                                              \
@@ -250,8 +240,8 @@ _HashMapNextPrimeResult _##NAME##NextPrime(size_t capacity,                    \
 /* \param entry Entry to insert in map.                                      */\
 /* \return FALSE if bucket could not grow                                    */\
 static bool _##NAME##PutReal(NAME *map,                                        \
-                             NAME##Entry *entry) {                             \
-    NAME##Bucket *bucket = &map->entries[entry->hash %                         \
+                             _HashType##NAME entry) {                          \
+    NAME##Bucket *bucket = &map->entries[((size_t) GET_HASH(entry)) %          \
                                          _##NAME##Primes[map->nth_prime]];     \
     uint8_t nth_prime = bucket->nth_prime;                                     \
     size_t newSize = 0;                                                        \
@@ -267,7 +257,7 @@ static bool _##NAME##PutReal(NAME *map,                                        \
         default:                                                               \
             return false;                                                      \
     }                                                                          \
-    bucket->entries[bucket->size ++] = *entry;                                 \
+    bucket->entries[bucket->size ++] = entry;                                  \
     return true;                                                               \
 }                                                                              \
                                                                                \
@@ -299,7 +289,7 @@ bool NAME##EnsureSize(NAME *map,                                               \
         for(size_t i = 0; i < capacity; ++i) {                                 \
             NAME##Bucket *bucket = &oldEntries[i];                             \
             for(size_t h = 0; h < oldEntries[i].size; ++h) {                   \
-                _##NAME##PutReal(map, &oldEntries[i].entries[h]);              \
+                _##NAME##PutReal(map, oldEntries[i].entries[h]);               \
             }                                                                  \
             FREE(bucket->entries);                                             \
         }                                                                      \
@@ -307,29 +297,25 @@ bool NAME##EnsureSize(NAME *map,                                               \
     return true;                                                               \
 }                                                                              \
                                                                                \
-_HashResolution##NAME NAME##Hash(NAME##Entry *entry) {                         \
-    return ( entry->hash = HASH(entry) );                                      \
-}                                                                              \
-                                                                               \
-NAME##Entry *NAME##Find(const NAME *map,                                       \
-                        NAME##Entry *entry) {                                  \
+_HashType##NAME NAME##Find(const NAME *map,                                    \
+                           _HashType##NAME entry) {                            \
     if(!map->entries) {                                                        \
         return NULL;                                                           \
     }                                                                          \
-    NAME##Bucket *bucket = &map->entries[entry->hash %                         \
+    NAME##Bucket *bucket = &map->entries[((size_t) GET_HASH(entry)) %          \
                                          _##NAME##Primes[map->nth_prime]];     \
     for(size_t h = 0; h < bucket->size; ++h) {                                 \
-        if(CMP(&bucket->entries[h], entry) == 0) {                             \
-            return &bucket->entries[h];                                        \
+        if(CMP(bucket->entries[h], entry) == 0) {                              \
+            return bucket->entries[h];                                         \
         }                                                                      \
     }                                                                          \
     return NULL;                                                               \
 }                                                                              \
                                                                                \
 HashMapPutResult NAME##Put(NAME *map,                                          \
-                           NAME##Entry **entry,                                \
+                           _HashType##NAME *entry,                             \
                            HashMapDuplicateResolution dr) {                    \
-    NAME##Entry *current = NAME##Find(map, *entry);                            \
+    _HashType##NAME current = NAME##Find(map, *entry);                         \
     HashMapPutResult result;                                                   \
     if(!current) {                                                             \
         current = *entry;                                                      \
@@ -339,18 +325,17 @@ HashMapPutResult NAME##Put(NAME *map,                                          \
             *entry = current;                                                  \
             return HMPR_FOUND;                                                 \
         case HMDR_REPLACE: {                                                   \
-            *current = **entry;                                                \
-            *entry = NULL;                                                     \
+            current = *entry;                                                  \
             return HMPR_REPLACED;                                              \
         }                                                                      \
         case HMDR_SWAP: {                                                      \
-            NAME##Entry tmp = *current;                                        \
-            *current = **entry;                                                \
-            **entry = tmp;                                                     \
+            _HashType##NAME tmp = current;                                     \
+            current = *entry;                                                  \
+            *entry = tmp;                                                      \
             return HMPR_SWAPPED;                                               \
         }                                                                      \
         case HMDR_STACK: {                                                     \
-            NAME##Entry *tmp = *entry;                                         \
+            _HashType##NAME tmp = *entry;                                      \
             *entry = current;                                                  \
             current = tmp;                                                     \
             result = HMPR_STACKED;                                             \
@@ -366,13 +351,21 @@ HashMapPutResult NAME##Put(NAME *map,                                          \
     return result;                                                             \
 }                                                                              \
                                                                                \
-void NAME##Remove(NAME *map,                                                   \
-                  NAME##Entry *entry) {                                        \
-    NAME##Bucket *bucket = &map->entries[entry->hash %                         \
+bool NAME##Remove(NAME *map,                                                   \
+                  _HashType##NAME *entry) {                                    \
+    NAME##Bucket *bucket = &map->entries[((size_t) GET_HASH(*entry)) %         \
                                          _##NAME##Primes[map->nth_prime]];     \
-    size_t nth = (entry - &bucket->entries[0]) / sizeof(*entry);               \
-    memmove(entry, entry+1, sizeof(NAME##Bucket[bucket->size - nth]));         \
-    --bucket->size;                                                            \
+    for(size_t nth = 0; nth < bucket->size; ++nth) {                           \
+        if(CMP(*entry, bucket->entries[nth]) == 0) {                           \
+            *entry = bucket->entries[nth];                                     \
+            memmove(&bucket->entries[nth],                                     \
+                    &bucket->entries[nth+1],                                   \
+                    sizeof(NAME##Bucket[bucket->size - nth - 1]));             \
+            --bucket->size;                                                    \
+            return true;                                                       \
+        }                                                                      \
+    }                                                                          \
+    return false;                                                              \
 }
 
 #endif // ifndef HASHMAP_H__
