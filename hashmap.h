@@ -86,8 +86,8 @@ bool NAME##EnsureSize(NAME *map,                                               \
 /* \param map Map to search in.                                              */\
 /* \param entry Entry to search                                              */\
 /* \return Found entry or NULL                                               */\
-_HashType##NAME NAME##Find(const NAME *map,                                    \
-                           _HashType##NAME entry);                             \
+_HashType##NAME *NAME##Find(const NAME *map,                                   \
+                            _HashType##NAME entry);                            \
                                                                                \
 /* Adds an entry into a map.                                                 */\
 /* \param map Map to add to.                                                 */\
@@ -297,8 +297,8 @@ bool NAME##EnsureSize(NAME *map,                                               \
     return true;                                                               \
 }                                                                              \
                                                                                \
-_HashType##NAME NAME##Find(const NAME *map,                                    \
-                           _HashType##NAME entry) {                            \
+_HashType##NAME *NAME##Find(const NAME *map,                                   \
+                            _HashType##NAME entry) {                           \
     if(!map->entries) {                                                        \
         return NULL;                                                           \
     }                                                                          \
@@ -306,7 +306,7 @@ _HashType##NAME NAME##Find(const NAME *map,                                    \
                                          _##NAME##Primes[map->nth_prime]];     \
     for(size_t h = 0; h < bucket->size; ++h) {                                 \
         if((CMP(bucket->entries[h], entry)) == 0) {                            \
-            return bucket->entries[h];                                         \
+            return &bucket->entries[h];                                        \
         }                                                                      \
     }                                                                          \
     return NULL;                                                               \
@@ -315,29 +315,29 @@ _HashType##NAME NAME##Find(const NAME *map,                                    \
 HashMapPutResult NAME##Put(NAME *map,                                          \
                            _HashType##NAME *entry,                             \
                            HashMapDuplicateResolution dr) {                    \
-    _HashType##NAME current = NAME##Find(map, *entry);                         \
+    _HashType##NAME *current = NAME##Find(map, *entry);                        \
     HashMapPutResult result;                                                   \
     if(!current) {                                                             \
-        current = *entry;                                                      \
+        *current = *entry;                                                     \
         result = HMPR_PUT;                                                     \
     } else switch(dr) {                                                        \
         case HMDR_FIND:                                                        \
-            *entry = current;                                                  \
+            *entry = *current;                                                 \
             return HMPR_FOUND;                                                 \
         case HMDR_REPLACE: {                                                   \
-            current = *entry;                                                  \
+            *current = *entry;                                                 \
             return HMPR_REPLACED;                                              \
         }                                                                      \
         case HMDR_SWAP: {                                                      \
-            _HashType##NAME tmp = current;                                     \
-            current = *entry;                                                  \
+            _HashType##NAME tmp = *current;                                    \
+            *current = *entry;                                                 \
             *entry = tmp;                                                      \
             return HMPR_SWAPPED;                                               \
         }                                                                      \
         case HMDR_STACK: {                                                     \
             _HashType##NAME tmp = *entry;                                      \
-            *entry = current;                                                  \
-            current = tmp;                                                     \
+            *entry = *current;                                                 \
+            *current = tmp;                                                    \
             result = HMPR_STACKED;                                             \
             break;                                                             \
         }                                                                      \
@@ -345,7 +345,7 @@ HashMapPutResult NAME##Put(NAME *map,                                          \
             return HMPR_FAILED;                                                \
     }                                                                          \
     if(!NAME##EnsureSize(map, map->size+1) || !_##NAME##PutReal(map,           \
-                                                                current)) {    \
+                                                                *current)) {   \
         return HMPR_FAILED;                                                    \
     }                                                                          \
     return result;                                                             \
@@ -369,4 +369,3 @@ bool NAME##Remove(NAME *map,                                                   \
 }
 
 #endif // ifndef HASHMAP_H__
-
