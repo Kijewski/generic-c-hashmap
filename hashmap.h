@@ -13,16 +13,16 @@
 typedef enum {
     HMDR_FIND,    // returns old entry in parameter entry
     HMDR_REPLACE, // puts new entry, replaces current entry if exists
-    HMDR_SWAP,    // puts new entry, swappes old entry with **entry otherwise
+    HMDR_SWAP,    // puts new entry, swappes old entry with *entry otherwise
     HMDR_STACK,   // put an duplicate input the map (later you have to call
-                  // find-delete multiple times)
+                  // delete multiple times)
 } HashMapDuplicateResolution;
 
 typedef enum {
     HMPR_FAILED,   // map could not grow
     HMPR_FOUND,    // item already existed and was stored in *entry
-    HMPR_REPLACED, // item already existed and was replace, *extry set NULL
-    HMPR_SWAPPED,  // item already existed and was swapped with **entry
+    HMPR_REPLACED, // item already existed and was replace
+    HMPR_SWAPPED,  // item already existed and was swapped with *entry
     HMPR_STACKED,  // new item was stacked in map, old value stored in *entry
     HMPR_PUT,      // new item was added to map
 } HashMapPutResult;
