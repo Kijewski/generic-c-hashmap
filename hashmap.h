@@ -241,7 +241,7 @@ static _HashMapNextPrimeResult _##NAME##NextPrime(size_t capacity,             \
 /* \return FALSE if bucket could not grow                                    */\
 static bool _##NAME##PutReal(NAME *map,                                        \
                              _HashType##NAME entry) {                          \
-    NAME##Bucket *bucket = &map->entries[((size_t) GET_HASH(entry)) %          \
+    NAME##Bucket *bucket = &map->entries[((size_t)(GET_HASH(entry))) %         \
                                          _##NAME##Primes[map->nth_prime]];     \
     uint8_t nth_prime = bucket->nth_prime;                                     \
     size_t newSize = 0;                                                        \
@@ -302,10 +302,10 @@ _HashType##NAME NAME##Find(const NAME *map,                                    \
     if(!map->entries) {                                                        \
         return NULL;                                                           \
     }                                                                          \
-    NAME##Bucket *bucket = &map->entries[((size_t) GET_HASH(entry)) %          \
+    NAME##Bucket *bucket = &map->entries[((size_t)(GET_HASH(entry))) %         \
                                          _##NAME##Primes[map->nth_prime]];     \
     for(size_t h = 0; h < bucket->size; ++h) {                                 \
-        if(CMP(bucket->entries[h], entry) == 0) {                              \
+        if((CMP(bucket->entries[h], entry)) == 0) {                            \
             return bucket->entries[h];                                         \
         }                                                                      \
     }                                                                          \
@@ -353,10 +353,10 @@ HashMapPutResult NAME##Put(NAME *map,                                          \
                                                                                \
 bool NAME##Remove(NAME *map,                                                   \
                   _HashType##NAME *entry) {                                    \
-    NAME##Bucket *bucket = &map->entries[((size_t) GET_HASH(*entry)) %         \
+    NAME##Bucket *bucket = &map->entries[((size_t)(GET_HASH(*entry))) %        \
                                          _##NAME##Primes[map->nth_prime]];     \
     for(size_t nth = 0; nth < bucket->size; ++nth) {                           \
-        if(CMP(*entry, bucket->entries[nth]) == 0) {                           \
+        if((CMP(*entry, bucket->entries[nth])) == 0) {                         \
             *entry = bucket->entries[nth];                                     \
             memmove(&bucket->entries[nth],                                     \
                     &bucket->entries[nth+1],                                   \
