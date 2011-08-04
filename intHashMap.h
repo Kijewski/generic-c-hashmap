@@ -8,6 +8,6 @@
 
 #include "hashmap.h"
 
-DEFINE_HASHMAP(stringHashMap, int)
+DEFINE_HASHMAP(intHashMap, int)
 
 #endif // ifndef INT_HASH_MAP__
