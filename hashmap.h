@@ -20,8 +20,8 @@ typedef enum {
 
 typedef enum {
     HMPR_FAILED,   // map could not grow
-    HMPR_FOUND,    // item already existed and was stored in *entry
-    HMPR_REPLACED, // item already existed and was replace
+    HMPR_FOUND,    // item already existed
+    HMPR_REPLACED, // item was replace
     HMPR_SWAPPED,  // item already existed and was swapped with *entry
     HMPR_STACKED,  // new item was stacked in map, old value stored in *entry
     HMPR_PUT,      // new item was added to map
@@ -84,17 +84,18 @@ bool NAME##EnsureSize(NAME *map,                                               \
                                                                                \
 /* Looks up an entry in a map.                                               */\
 /* \param map Map to search in.                                              */\
-/* \param entry [Out] Entry to search, returns found item                    */\
+/* \param entry [In/Out] Entry to search, returns pointer to found item      */\
 /* \return false, if could not found.                                        */\
 bool NAME##Find(const NAME *map,                                               \
-                _HashType##NAME *entry);                                       \
+                _HashType##NAME **entry);                                      \
                                                                                \
 /* Adds an entry into a map.                                                 */\
 /* \param map Map to add to.                                                 */\
-/* \param entry Entry add. If duplicate, return it in here.                  */\
+/* \param entry [In/Out] Entry add. If duplicate, return pointer to it in    */\
+/*              here.                                                        */\
 /* \return false, if map could not grow                                      */\
 HashMapPutResult NAME##Put(NAME *map,                                          \
-                           _HashType##NAME *entry,                             \
+                           _HashType##NAME **entry,                            \
                            HashMapDuplicateResolution dr);                     \
                                                                                \
 /* Removes an entry for the list.                                            */\
@@ -301,15 +302,15 @@ bool NAME##EnsureSize(NAME *map,                                               \
 }                                                                              \
                                                                                \
 bool NAME##Find(const NAME *map,                                               \
-                _HashType##NAME *entry) {                                      \
+                _HashType##NAME **entry) {                                     \
     if(!map->entries) {                                                        \
         return NULL;                                                           \
     }                                                                          \
-    NAME##Bucket *bucket = &map->entries[((size_t)(GET_HASH(entry))) %         \
+    NAME##Bucket *bucket = &map->entries[((size_t)(GET_HASH(*entry))) %        \
                                          _##NAME##Primes[map->nth_prime]];     \
     for(size_t h = 0; h < bucket->size; ++h) {                                 \
-        if((CMP(&bucket->entries[h], entry)) == 0) {                           \
-            *entry = bucket->entries[h];                                       \
+        if((CMP((&bucket->entries[h]), (*entry))) == 0) {                      \
+            *entry = &bucket->entries[h];                                      \
             return true;                                                       \
         }                                                                      \
     }                                                                          \
@@ -317,31 +318,33 @@ bool NAME##Find(const NAME *map,                                               \
 }                                                                              \
                                                                                \
 HashMapPutResult NAME##Put(NAME *map,                                          \
-                           _HashType##NAME *entry,                             \
+                           _HashType##NAME **entry,                            \
                            HashMapDuplicateResolution dr) {                    \
     HashMapPutResult result;                                                   \
-    _HashType##NAME *current = entry;                                          \
-    if(!NAME##Find(map, entry)) {                                              \
-        *current = *entry;                                                     \
+    _HashType##NAME *current = *entry;                                         \
+    if(!NAME##Find(map, &current)) {                                           \
+        current = *entry;                                                      \
         result = HMPR_PUT;                                                     \
     } else switch(dr) {                                                        \
         case HMDR_FIND:                                                        \
-            *entry = *current;                                                 \
+            *entry = current;                                                  \
             return HMPR_FOUND;                                                 \
         case HMDR_REPLACE: {                                                   \
-            *current = *entry;                                                 \
+            *current = **entry;                                                \
+            *entry = current;                                                  \
             return HMPR_REPLACED;                                              \
         }                                                                      \
         case HMDR_SWAP: {                                                      \
             _HashType##NAME tmp = *current;                                    \
-            *current = *entry;                                                 \
-            *entry = tmp;                                                      \
+            *current = **entry;                                                \
+            **entry = tmp;                                                     \
+            *entry = current;                                                  \
             return HMPR_SWAPPED;                                               \
         }                                                                      \
         case HMDR_STACK: {                                                     \
-            _HashType##NAME tmp = *entry;                                      \
-            *entry = *current;                                                 \
-            *current = tmp;                                                    \
+            _HashType##NAME *tmp = *entry;                                     \
+            *entry = current;                                                  \
+            current = tmp;                                                     \
             result = HMPR_STACKED;                                             \
             break;                                                             \
         }                                                                      \
@@ -360,7 +363,7 @@ bool NAME##Remove(NAME *map,                                                   \
     NAME##Bucket *bucket = &map->entries[((size_t)(GET_HASH(entry))) %         \
                                          _##NAME##Primes[map->nth_prime]];     \
     for(size_t nth = 0; nth < bucket->size; ++nth) {                           \
-        if((CMP(entry, &bucket->entries[nth])) == 0) {                         \
+         if((CMP(entry, (&bucket->entries[nth]))) == 0) {                      \
             *entry = bucket->entries[nth];                                     \
             memmove(&bucket->entries[nth],                                     \
                     &bucket->entries[nth+1],                                   \
