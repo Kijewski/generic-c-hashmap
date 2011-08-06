@@ -6,7 +6,7 @@ It only knows how to find, put, remove, and iterate over entries.
 
 You don't have make any adjustments at all to the elements to store.
 If you can find a hash function and an equality comparator for your data type,
-you can store it in an *generic-c-hashmap*.
+you can store it in a *generic-c-hashmap*.
 
 ## TOC
 
@@ -139,7 +139,7 @@ hash!
 
 Iterates over all elements stored in the map. `iter` is the iterator.
 You may use `break` and `continue` and in usual loops.
-While iterating you must not add to or remove from teh map!
+While iterating you must not add to or remove from the map!
 
 If your map stores pointers, you may want to iterate over all elements and the
 `free(*iter)` before destroying the hashmap to avoid memory leaks.
@@ -216,5 +216,5 @@ In short:
 * you don't have to acknowledge *generic-c-hashmap*, if you use it in a binary
   distribution, but you may if you want to,
 * you have to put the license file in your source code distribution and must
-  attribute the contibuters to *generic-c-hashmap* in the respective source code
+  attribute the contributers to *generic-c-hashmap* in the respective source code
   files.
