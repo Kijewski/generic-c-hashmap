@@ -4,7 +4,7 @@
  */
 
 // Compile:
-// cc -Wall -Wextra -pedantic -std=gnu99 -Os stringCount.c -o stringCount
+// cc -Wall -Wextra -pedantic -std=gnu99 -O3 stringCount.c -o stringCount
 
 #include "../hashmap.h"
 #include <stdio.h>

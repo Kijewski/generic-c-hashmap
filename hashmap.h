@@ -209,7 +209,7 @@ void NAME##Destroy(NAME *map) {                                                \
     map->entries = NULL;                                                       \
 }                                                                              \
                                                                                \
-/* Looks for smallest prime p: capacity <= 2^n <= p < 2^(n+1)                */\
+/* Looks for smallest prime p: 2^n < capacity <= p < 2^(n+1)                 */\
 /* \param capacity Capacity to ensure.                                       */\
 /* \param entries Boolean flag, if nth_prime_ is meaningful.                 */\
 /* \param entries nth_prime_ [In/out] current capacity, see _HASHMAP_PRIMES  */\
