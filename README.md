@@ -31,6 +31,10 @@ you can store it in a *generic-c-hashmap*.
 See [examples folder](
 https://github.com/Kijewski/generic-c-hashmap/tree/master/examples).
 
+Especially [stringCount.c](
+https://github.com/Kijewski/generic-c-hashmap/blob/master/examples/stringCount.c
+) is an example for a blazing fast (and I mean it!) word counter.
+
 <a name="set-up"></a>
 
 ## Set up
@@ -192,7 +196,7 @@ Maybe I will click “Random article” in Wikipedia until I find a cool name. :
 
 ## Performance
 
-Didn't test it …
+Didn't measure it …
 
 <a name="contributers"></a>
 
