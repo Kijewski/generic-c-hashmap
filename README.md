@@ -196,7 +196,25 @@ Maybe I will click “Random article” in Wikipedia until I find a cool name. :
 
 ## Performance
 
-Didn't measure it …
+Seems to perform in same league as widely used (uthash)[
+http://uthash.sourceforge.net/]. See [speed tests](
+https://github.com/Kijewski/generic-c-hashmap/tree/master/speedTest)
+
+Execution time (ms):
+
+<pre>
+                -O0  -O1  -O2  -O3  -Os
+gen.-c-hashmap  258  211  212  202  218
+uthash          278  214  219  216  201
+</pre>
+
+Compiling time (ms):
+
+<pre>
+                -O0  -O1  -O2  -O3  -Os
+gen.-c-hashmap   40   63   84  108   69
+uthash          941  953  971  978  966
+</pre>
 
 <a name="contributers"></a>
 
