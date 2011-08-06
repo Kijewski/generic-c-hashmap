@@ -1,10 +1,13 @@
-#include <stdio.h>
 /*
  * AUTHOR:  René Kijewski  (rene.<surname>@fu-berlin.de)
  * LICENSE: MIT
  */
 
+// Compile:
+// cc -Wall -Wextra -pedantic -std=gnu99 -Os stringCount.c -o stringCount
+
 #include "../hashmap.h"
+#include <stdio.h>
 #include <stdlib.h>
 
 // http://www.cse.yorku.ca/~oz/hash.html

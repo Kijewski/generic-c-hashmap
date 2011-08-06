@@ -129,8 +129,7 @@ Find element `*entry` an returns it pointer in `*entry`.
 Returns `false` if `*entry` was not found. In latter case `*entry` will contain
 a random value.
 
-You may change value of the retrieved `*entry`but you must notn change its
-hash!
+You may change value of the retrieved `*entry`but you must not change its hash!
 
     TYPE *iter;
     HASHMAP_FOR_EACH(NAME, iter, map) {
@@ -213,8 +212,8 @@ MIT license, see
 In short:
 
 * you may use *generic-c-hashmap* in your commercial applications,
-* you don't have to acknowledge *generic-c-hashmap*, if you use it in a binary
-  distribution, but you may if you want to,
+* you don't have give to credit to *generic-c-hashmap*, if you use it in a
+  binary distribution, but you may if you want to,
 * you have to put the license file in your source code distribution and must
   attribute the contributers to *generic-c-hashmap* in the respective source code
   files.

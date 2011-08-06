@@ -209,7 +209,7 @@ void NAME##Destroy(NAME *map) {                                                \
     map->entries = NULL;                                                       \
 }                                                                              \
                                                                                \
-/* Looks for prime p: capacity <= 2^n <= p < 2^(n+1)                         */\
+/* Looks for smallest prime p: capacity <= 2^n <= p < 2^(n+1)                */\
 /* \param capacity Capacity to ensure.                                       */\
 /* \param entries Boolean flag, if nth_prime_ is meaningful.                 */\
 /* \param entries nth_prime_ [In/out] current capacity, see _HASHMAP_PRIMES  */\
@@ -266,6 +266,7 @@ static _HashType##NAME *_##NAME##PutReal(NAME *map,                            \
                                                                                \
 bool NAME##EnsureSize(NAME *map,                                               \
                       size_t capacity) {                                       \
+    capacity = (capacity+2)/3 * 4; /* load factor = 0.75 */                    \
     uint8_t nth_prime = map->nth_prime;                                        \
     size_t oldCapacity = _##NAME##Primes[nth_prime];                           \
     size_t newSize = 0;                                                        \
