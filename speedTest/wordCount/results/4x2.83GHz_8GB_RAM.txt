@@ -1,0 +1,46 @@
+Intel(R) Core(TM)2 Quad CPU Q9550 @ 2.83GHz
+7877 MB RAM
+
+25 runs
+Hashing 985724 words
+
+Contestant: generic-c-hashmap-count; optimization: -O0
+Compiling: .040
+Execution: .258
+
+Contestant: generic-c-hashmap-count; optimization: -O1
+Compiling: .063
+Execution: .211
+
+Contestant: generic-c-hashmap-count; optimization: -O2
+Compiling: .084
+Execution: .212
+
+Contestant: generic-c-hashmap-count; optimization: -O3
+Compiling: .108
+Execution: .202
+
+Contestant: generic-c-hashmap-count; optimization: -Os
+Compiling: .069
+Execution: .218
+
+Contestant: uthash-count; optimization: -O0
+Compiling: .941
+Execution: .278
+
+Contestant: uthash-count; optimization: -O1
+Compiling: .953
+Execution: .214
+
+Contestant: uthash-count; optimization: -O2
+Compiling: .971
+Execution: .219
+
+Contestant: uthash-count; optimization: -O3
+Compiling: .978
+Execution: .216
+
+Contestant: uthash-count; optimization: -Os
+Compiling: .966
+Execution: .201
+
