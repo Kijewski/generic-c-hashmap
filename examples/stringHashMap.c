@@ -7,22 +7,15 @@
 
 #include "stringHashMap.h"
 
-static uint32_t stringHash(char **entry) {
-	static uint32_t hash[] = { _HASHMAP_PRIMES };
-	uint32_t result = -1u;
-	size_t index = 0;
-	for(const char *string = *entry; *string; ++string) {
-		uint32_t o = result;
-		result ^= o << 5;
-		result ^= o >> (32-5);
-		result += *string * hash[index++];
-		if(index >= (sizeof(hash) / sizeof(hash[0]))) {
-			index = 0;
-		}
+// http://www.cse.yorku.ca/~oz/hash.html
+static uint64_t djb2(char **entry) {
+	unsigned long hash = 5381;
+	for(char *c = *entry; *c; ++c) {
+		hash = ((hash << 5) + hash) + *c;
 	}
-	return result;
+	return hash;
 }
 
 #define STRING_CMP(left, right) strcmp(*left, *right)
 
-DECLARE_HASHMAP(stringHashMap, STRING_CMP, stringHash, free, realloc)
+DECLARE_HASHMAP(stringHashMap, STRING_CMP, djb2, free, realloc)

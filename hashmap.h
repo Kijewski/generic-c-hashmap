@@ -11,20 +11,22 @@
 #include <string.h>
 
 typedef enum {
-    HMDR_FIND,    // returns old entry in parameter entry
-    HMDR_REPLACE, // puts new entry, replaces current entry if exists
-    HMDR_SWAP,    // puts new entry, swappes old entry with *entry otherwise
-    HMDR_STACK,   // put an duplicate input the map (later you have to call
-                  // delete multiple times)
+    HMDR_FAIL = 0, // returns old entry in parameter entry, lets NAME##Put()
+                   // "fail", i.e. return HMPR_FAILED
+    HMDR_FIND,     // returns old entry in parameter entry
+    HMDR_REPLACE,  // puts new entry, replaces current entry if exists
+    HMDR_SWAP,     // puts new entry, swappes old entry with *entry otherwise
+    HMDR_STACK,    // put an duplicate input the map (later you have to call
+                   // delete multiple times)
 } HashMapDuplicateResolution;
 
 typedef enum {
-    HMPR_FAILED,   // map could not grow
-    HMPR_FOUND,    // item already existed
-    HMPR_REPLACED, // item was replace
-    HMPR_SWAPPED,  // item already existed and was swapped with *entry
-    HMPR_STACKED,  // new item was stacked in map, old value stored in *entry
-    HMPR_PUT,      // new item was added to map
+    HMPR_FAILED = 0, // map could not grow
+    HMPR_FOUND,      // item already existed
+    HMPR_REPLACED,   // item was replace
+    HMPR_SWAPPED,    // item already existed and was swapped with *entry
+    HMPR_STACKED,    // new item was stacked in map, old value stored in *entry
+    HMPR_PUT,        // new item was added to map
 } HashMapPutResult;
 
 typedef enum {
@@ -66,12 +68,10 @@ typedef _HashStructure(NAME##Bucket)    NAME;                                  \
 /* An null'ed map is initalized too, but has an empty capacity (which grows  */\
 /* automatically.)                                                           */\
 /* \param map [Out] Map to initialize                                        */\
-/* \param initialCapacity [In] Hint, how much capacity to reserve.           */\
-/* \return false, if it not worked                                           */\
-bool NAME##New(NAME *map,                                                      \
-               size_t initialCapacity);                                        \
+void NAME##New(NAME *map);                                                     \
                                                                                \
-/* Destroys a hash map. (The map will have an capacity of 0 after his call.) */\
+/* Destroys a hash map, i.e.the map will have an size and capacity of 0      */\
+/* after his call.                                                           */\
 /* \param map Map to destroy.                                                */\
 void NAME##Destroy(NAME *map);                                                 \
                                                                                \
@@ -111,7 +111,7 @@ bool NAME##Remove(NAME *map,                                                   \
  * You can use continue and break as in usual for-loops.
  * 
  * You HAVE TO put braces:
- *     HASHMAP_FOR_EACH(iter, map) {
+ *     HASHMAP_FOR_EACH(NAME, iter, map) {
  *         do_something();
  *     } HASHMAP_FOR_EACH_END
  *  It's meant as a feature ...
@@ -122,10 +122,10 @@ bool NAME##Remove(NAME *map,                                                   \
  */
 #define HASHMAP_FOR_EACH(NAME, ITER, MAP)                                      \
     do {                                                                       \
-        if(!map.entries && map.size) {                                         \
+        if(!map.entries || !map.size) {                                        \
             break;                                                             \
         }                                                                      \
-        for(size_t __i = 0, __broke = false; !__broke &&                       \
+        for(size_t __i = 0, __broke = 0; !__broke &&                           \
                                __i < _##NAME##Primes[map.nth_prime]; ++__i) {  \
             if(!map.entries[__i].entries) {                                    \
                 continue;                                                      \
@@ -133,14 +133,14 @@ bool NAME##Remove(NAME *map,                                                   \
             for(size_t __h = 0; !__broke && __h < map.entries[__i].size;       \
                                                                       ++__h) { \
                 ITER = &map.entries[__i].entries[__h];                         \
-                __broke = true;                                                \
+                __broke = 1;                                                   \
                 do
 
 /**
  * Closes a HASHMAP_FOR_EACH(...)
  */
 #define HASHMAP_FOR_EACH_END                                                   \
-                while( (__broke = false) );                                    \
+                while( (__broke = 0) );                                        \
             }                                                                  \
         }                                                                      \
     } while(0);
@@ -151,10 +151,10 @@ bool NAME##Remove(NAME *map,                                                   \
  */
 #define HASHMAP_FOR_EACH_SAFE_TO_DELETE(NAME, ITER, MAP)                       \
     do {                                                                       \
-        if(!map.entries && map.size) {                                         \
+        if(!map.entries || !map.size) {                                        \
             break;                                                             \
         }                                                                      \
-        for(size_t __i = 0, __broke = false; !__broke &&                       \
+        for(size_t __i = 0, __broke = 0; !__broke &&                           \
                                __i < _##NAME##Primes[map.nth_prime]; ++__i) {  \
             if(!map.entries[__i].entries) {                                    \
                 continue;                                                      \
@@ -188,21 +188,18 @@ bool NAME##Remove(NAME *map,                                                   \
                                                                                \
 const size_t _##NAME##Primes[] = { _HASHMAP_PRIMES, 0 };                       \
                                                                                \
-bool NAME##New(NAME *map,                                                      \
-               size_t initialCapacity) {                                       \
+void NAME##New(NAME *map) {                                                    \
     map->size = 0;                                                             \
     map->nth_prime = 0;                                                        \
     map->entries = NULL;                                                       \
-    return NAME##EnsureSize(map, initialCapacity);                             \
 }                                                                              \
                                                                                \
 void NAME##Destroy(NAME *map) {                                                \
     if(map->entries && map->size) {                                            \
         size_t capacity = _##NAME##Primes[map->nth_prime];                     \
         for(size_t i = 0; i < capacity; ++i) {                                 \
-            void *entries = map->entries[i].entries;                           \
-            if(entries) {                                                      \
-                FREE(entries);                                                 \
+            if(map->entries[i].entries) {                                      \
+                FREE(map->entries[i].entries);                                 \
             }                                                                  \
         }                                                                      \
     }                                                                          \
@@ -242,9 +239,9 @@ static _HashMapNextPrimeResult _##NAME##NextPrime(size_t capacity,             \
 /* or minding duplicates.                                                    */\
 /* \param map Map to put entry into.                                         */\
 /* \param entry Entry to insert in map.                                      */\
-/* \return FALSE if bucket could not grow                                    */\
-static bool _##NAME##PutReal(NAME *map,                                        \
-                             _HashType##NAME *entry) {                         \
+/* \return pointer to inserted element, or NULL if could not grow            */\
+static _HashType##NAME *_##NAME##PutReal(NAME *map,                            \
+                                         _HashType##NAME *entry) {             \
     NAME##Bucket *bucket = &map->entries[((size_t)(GET_HASH(entry))) %         \
                                          _##NAME##Primes[map->nth_prime]];     \
     uint8_t nth_prime = bucket->nth_prime;                                     \
@@ -252,22 +249,25 @@ static bool _##NAME##PutReal(NAME *map,                                        \
     switch(_##NAME##NextPrime(bucket->size+1, bucket->entries, &nth_prime,     \
                                                                &newSize)) {    \
         case _HMNPR_FAIL:                                                      \
-            return false;                                                      \
+            return NULL;                                                       \
         case _HMNPR_GREW:                                                      \
-            bucket->entries = REALLOC(bucket->entries, newSize);               \
+            bucket->entries = REALLOC(bucket->entries,                         \
+                                      sizeof(_HashType##NAME[newSize]));       \
             break;                                                             \
         case _HMNPR_NOT_NEEDED:                                                \
             break;                                                             \
         default:                                                               \
-            return false;                                                      \
+            return NULL;                                                       \
     }                                                                          \
-    bucket->entries[bucket->size ++] = *entry;                                 \
-    return true;                                                               \
+    _HashType##NAME *result = &bucket->entries[bucket->size ++];               \
+    *result = *entry;                                                          \
+    return result;                                                             \
 }                                                                              \
                                                                                \
 bool NAME##EnsureSize(NAME *map,                                               \
                       size_t capacity) {                                       \
     uint8_t nth_prime = map->nth_prime;                                        \
+    size_t oldCapacity = _##NAME##Primes[nth_prime];                           \
     size_t newSize = 0;                                                        \
     switch(_##NAME##NextPrime(capacity, map->entries, &nth_prime, &newSize)) { \
         case _HMNPR_FAIL:                                                      \
@@ -281,16 +281,16 @@ bool NAME##EnsureSize(NAME *map,                                               \
     }                                                                          \
     NAME##Bucket *oldEntries = map->entries;                                   \
     NAME##Bucket *newEntries = (NAME##Bucket*) REALLOC(NULL,                   \
-                                                       sizeof(NAME##Bucket));  \
+                                              sizeof(NAME##Bucket[newSize]));  \
     if(!newEntries) {                                                          \
         return false;                                                          \
     }                                                                          \
-    memset(&newEntries[0], 0, sizeof(NAME##Bucket));                           \
+    memset(&newEntries[0], 0, sizeof(NAME##Bucket[newSize]));                  \
     map->entries = newEntries;                                                 \
     map->nth_prime = nth_prime;                                                \
     /* TODO: a failed _##NAME##PutReal(...) would corrupt the map! */          \
     if(map->size) {                                                            \
-        for(size_t i = 0; i < capacity; ++i) {                                 \
+        for(size_t i = 0; i < oldCapacity; ++i) {                              \
             NAME##Bucket *bucket = &oldEntries[i];                             \
             for(size_t h = 0; h < oldEntries[i].size; ++h) {                   \
                 _##NAME##PutReal(map, &oldEntries[i].entries[h]);              \
@@ -306,7 +306,7 @@ bool NAME##Find(const NAME *map,                                               \
     if(!map->entries) {                                                        \
         return NULL;                                                           \
     }                                                                          \
-    NAME##Bucket *bucket = &map->entries[((size_t)(GET_HASH(*entry))) %        \
+    NAME##Bucket *bucket = &map->entries[((size_t)(GET_HASH((*entry)))) %      \
                                          _##NAME##Primes[map->nth_prime]];     \
     for(size_t h = 0; h < bucket->size; ++h) {                                 \
         if((CMP((&bucket->entries[h]), (*entry))) == 0) {                      \
@@ -326,6 +326,9 @@ HashMapPutResult NAME##Put(NAME *map,                                          \
         current = *entry;                                                      \
         result = HMPR_PUT;                                                     \
     } else switch(dr) {                                                        \
+        case HMDR_FAIL:                                                        \
+            *entry = current;                                                  \
+            return HMPR_FAILED;                                                \
         case HMDR_FIND:                                                        \
             *entry = current;                                                  \
             return HMPR_FOUND;                                                 \
@@ -351,10 +354,14 @@ HashMapPutResult NAME##Put(NAME *map,                                          \
         default:                                                               \
             return HMPR_FAILED;                                                \
     }                                                                          \
-    if(!NAME##EnsureSize(map, map->size+1) || !_##NAME##PutReal(map,           \
-                                                                current)) {    \
+    if(!NAME##EnsureSize(map, map->size+1)) {                                  \
         return HMPR_FAILED;                                                    \
     }                                                                          \
+    _HashType##NAME *putEntry = _##NAME##PutReal(map, current);                \
+    if(result == HMPR_PUT) {                                                   \
+        *entry = putEntry;                                                     \
+    }                                                                          \
+    ++map->size;                                                               \
     return result;                                                             \
 }                                                                              \
                                                                                \

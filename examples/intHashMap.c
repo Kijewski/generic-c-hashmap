@@ -7,7 +7,7 @@
 
 #include "intHashMap.h"
 
-#define INT_CMP(left, right) (*(left)==*(right) ? 0 : *(left)>*(right) ? -1 : +1)
+#define INT_CMP(left, right) *left==*right ? 0 : 1
 #define INT_HASH(entry) *entry
 
 DECLARE_HASHMAP(intHashMap, INT_CMP, INT_HASH, free, realloc)
