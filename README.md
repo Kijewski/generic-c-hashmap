@@ -196,9 +196,9 @@ Maybe I will click “Random article” in Wikipedia until I find a cool name. :
 
 ## Performance
 
-Seems to perform in same league as widely used (uthash)[
-http://uthash.sourceforge.net/]. See [speed tests](
-https://github.com/Kijewski/generic-c-hashmap/tree/master/speedTest)
+Seems to perform in same league as widely used [uthash](
+http://uthash.sourceforge.net/). See [speed tests](
+https://github.com/Kijewski/generic-c-hashmap/tree/master/speedTest).
 
 Execution time (ms):
 
