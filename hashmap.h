@@ -140,7 +140,7 @@ bool NAME##Remove(NAME *map,                                                   \
  * Closes a HASHMAP_FOR_EACH(...)
  */
 #define HASHMAP_FOR_EACH_END                                                   \
-                while( (__broke = 0) );                                        \
+                while( __broke = 0, __broke );                                 \
             }                                                                  \
         }                                                                      \
     } while(0);

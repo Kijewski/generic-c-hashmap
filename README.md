@@ -13,11 +13,11 @@ you can store it in a *generic-c-hashmap*.
 * [Examples](#examples)
 * [Set up](#set-up)
 * API:
-* * [Hash function](#hash-function)
-* * [Comparator function](#comparator-function)
-* * [Hashmap initialization and destruction](#hashmap-initialization-and-destruction)
-* * [Data retrieval](#data-retrieval)
-* * [Data modification](#data-modification)
+    * [Hash function](#hash-function)
+    * [Comparator function](#comparator-function)
+    * [Hashmap initialization and destruction](#hashmap-initialization-and-destruction)
+    * [Data retrieval](#data-retrieval)
+    * [Data modification](#data-modification)
 * [Note](#Note)
 * [Naming](#naming)
 * [Performance](#performance)
@@ -182,8 +182,6 @@ The maps capacity will never shrink.
 ## Note
 
 *generic-c-hashmap* uses C99 syntax. Use `--std=c99` or `--std=gnu99` with gcc.
-
-Clang has some strange bug and does not iterate over the elements.
 
 <a name="naming"></a>
 
