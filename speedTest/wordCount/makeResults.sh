@@ -18,7 +18,7 @@ function measure() {
 }
 
 for contestant in generic-c-hashmap-count uthash-count; do
-	for optimization in O0 O1 O2 O3 Os; do
+	for optimization in O0 O1 O2 O3 Os Ofast; do
 		echo "Contestant: $contestant; optimization: -$optimization"
 		measure "Compiling" cc -std=gnu99 "-$optimization" "./$contestant.c" -o "./$contestant" 
 		measure "Execution" "./$contestant" Clarissa.txt
