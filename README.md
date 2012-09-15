@@ -222,6 +222,8 @@ uthash          941  953  971  978  966
   original author
 * [Stefan Friesel](https://github.com/sfriesel):
   bug spotted
+* [pdiemert](https://github.com/pdiemert):
+  [bug spotted](https://github.com/Kijewski/generic-c-hashmap/issues/1)
 
 <a name="license"></a>
 

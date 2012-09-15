@@ -122,17 +122,17 @@ bool NAME##Remove(NAME *map,                                                   \
  */
 #define HASHMAP_FOR_EACH(NAME, ITER, MAP)                                      \
     do {                                                                       \
-        if(!map.entries || !map.size) {                                        \
+        if(!(MAP).entries || !(MAP).size) {                                    \
             break;                                                             \
         }                                                                      \
         for(size_t __i = 0, __broke = 0; !__broke &&                           \
-                               __i < _##NAME##Primes[map.nth_prime]; ++__i) {  \
-            if(!map.entries[__i].entries) {                                    \
+                               __i < _##NAME##Primes[(MAP).nth_prime]; ++__i) {\
+            if(!(MAP).entries[__i].entries) {                                  \
                 continue;                                                      \
             }                                                                  \
-            for(size_t __h = 0; !__broke && __h < map.entries[__i].size;       \
+            for(size_t __h = 0; !__broke && __h < (MAP).entries[__i].size;     \
                                                                       ++__h) { \
-                ITER = &map.entries[__i].entries[__h];                         \
+                ITER = &(MAP).entries[__i].entries[__h];                       \
                 __broke = 1;                                                   \
                 do
 
@@ -151,19 +151,19 @@ bool NAME##Remove(NAME *map,                                                   \
  */
 #define HASHMAP_FOR_EACH_SAFE_TO_DELETE(NAME, ITER, MAP)                       \
     do {                                                                       \
-        if(!map.entries || !map.size) {                                        \
+        if(!(MAP).entries || !(MAP).size) {                                    \
             break;                                                             \
         }                                                                      \
         for(size_t __i = 0, __broke = 0; !__broke &&                           \
-                               __i < _##NAME##Primes[map.nth_prime]; ++__i) {  \
-            if(!map.entries[__i].entries) {                                    \
+                               __i < _##NAME##Primes[(MAP).nth_prime]; ++__i) {\
+            if(!(MAP).entries[__i].entries) {                                  \
                 continue;                                                      \
             }                                                                  \
             const size_t __size = map.entries[__i].size;                       \
             _HashType##NAME __entries[__size];                                 \
-            memcpy(__entries, &map.entries[__i].entries, sizeof(__entries));   \
+            memcpy(__entries, &(MAP).entries[__i].entries, sizeof(__entries)); \
             for(size_t __h = 0; !__broke && __h < __size; ++__h) {             \
-                ITER = &map.entries[__i].entries[__h];                         \
+                ITER = &(MAP).entries[__i].entries[__h];                       \
                 __broke = true;                                                \
                 do
 
