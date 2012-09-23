@@ -293,12 +293,13 @@ bool NAME##EnsureSize(NAME *map,                                               \
     if(map->size) {                                                            \
         for(size_t i = 0; i < oldCapacity; ++i) {                              \
             NAME##Bucket *bucket = &oldEntries[i];                             \
-            for(size_t h = 0; h < oldEntries[i].size; ++h) {                   \
-                _##NAME##PutReal(map, &oldEntries[i].entries[h]);              \
+            for(size_t h = 0; h < bucket->size; ++h) {                         \
+                _##NAME##PutReal(map, &bucket->entries[h]);                    \
             }                                                                  \
             FREE(bucket->entries);                                             \
         }                                                                      \
     }                                                                          \
+    FREE(oldEntries);                                                          \
     return true;                                                               \
 }                                                                              \
                                                                                \
