@@ -195,7 +195,7 @@ void NAME##New(NAME *map) {                                                    \
 }                                                                              \
                                                                                \
 void NAME##Destroy(NAME *map) {                                                \
-    if(map->entries && map->size) {                                            \
+    if(map->entries) {                                                         \
         size_t capacity = _##NAME##Primes[map->nth_prime];                     \
         for(size_t i = 0; i < capacity; ++i) {                                 \
             if(map->entries[i].entries) {                                      \
@@ -378,6 +378,7 @@ bool NAME##Remove(NAME *map,                                                   \
                     &bucket->entries[nth+1],                                   \
                     sizeof(NAME##Bucket[bucket->size - nth - 1]));             \
             --bucket->size;                                                    \
+            --map->size;                                                       \
             return true;                                                       \
         }                                                                      \
     }                                                                          \

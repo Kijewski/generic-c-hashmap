@@ -225,6 +225,8 @@ uthash          941  953  971  978  966
 * [Pete Diemert](https://github.com/pdiemert):
   bugs spotted ([1](https://github.com/Kijewski/generic-c-hashmap/issues/1),
                 [2](https://github.com/Kijewski/generic-c-hashmap/issues/2))
+* [noderblade](https://github.com/noderblade):
+  bug spotted ([3](https://github.com/Kijewski/generic-c-hashmap/issues/3))
 
 <a name="license"></a>
 
